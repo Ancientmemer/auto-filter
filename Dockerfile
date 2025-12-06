@@ -1,17 +1,33 @@
-# Don't Remove Credit @VJ_Botz
-# Subscribe YouTube Channel For Amazing Bot @Tech_VJ
-# Ask Doubt on telegram @KingVJ01
+# Updated & Working Dockerfile for Render
 
-FROM python:3.10.8-slim-buster
+FROM python:3.10-slim-bullseye
 
-RUN apt update && apt upgrade -y
-RUN apt install git -y
-COPY requirements.txt /requirements.txt
+ENV DEBIAN_FRONTEND=noninteractive
 
-RUN cd /
-RUN pip3 install -U pip && pip3 install -U -r requirements.txt
-RUN mkdir /auto-filter
-WORKDIR /auto-filter
-COPY . /auto-filter
-CMD ["python", "bot.py"]
+# Install required system packages
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        git \
+        ffmpeg \
+        libmagic1 \
+        build-essential \
+        gcc \
+        libffi-dev \
+        libssl-dev && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
+# Copy requirements first (improves caching)
+COPY requirements.txt /tmp/requirements.txt
+
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir -r /tmp/requirements.txt
+
+# Create work directory
+WORKDIR /app
+COPY . /app
+
+# Render needs a PORT for health check
+ENV PORT=8080
+
+# Start your bot using webserver wrapper (recommended)
+CMD ["python3", "webserver.py"]
