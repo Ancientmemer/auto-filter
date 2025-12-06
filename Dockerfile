@@ -30,4 +30,5 @@ COPY . /app
 ENV PORT=8080
 
 # Start your bot using webserver wrapper (recommended)
-CMD ["python3", "webserver.py"]
+CMD ["python3", "bot.py"]
+
